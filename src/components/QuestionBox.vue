@@ -12,26 +12,43 @@
             <b-list-group-item 
             v-for="(answer, index) of answers" 
             :key="index"
-            @click="selectAnswer(index)">
+            @click="selectAnswer(index)"
+            :class="[selectedIndex === index ? 'selected' : '']">
                 {{answer}}
             </b-list-group-item>
         </b-list-group>
       
-        <b-button variant="primary" href="#">Submit</b-button>
+        <b-button 
+        variant="primary"
+        @click="submitAnswer"
+        :disabled="selectedIndex === null">
+            Submit
+        </b-button>
         <b-button @click="next" variant="success" href="#">Next</b-button>
         </b-jumbotron>
     </div>
 </template>
 
 <script>
+import _ from 'lodash';
+
     export default {
         props: {
             currentQuestion: Object,
-            next: Function
+            next: Function,
+            increment: Function,
         },
         data() {
             return {
-                selectedIndex: null
+                selectedIndex: null,
+                correctIndex: null,
+                shuffledAnswers: []
+            }
+        },
+        watch: {
+            currentQuestion() {
+                this.selectedIndex === null
+                this.shuffleAnswers()
             }
         },
         computed: {
@@ -44,7 +61,23 @@
         methods: {
             selectAnswer(index) {
                 this.selectedIndex = index
+            },
+            shuffleAnswers() {
+                let answers = [...this.currentQuestion.incorrect_answers, this.currentQuestion.correct_answer];
+                this.shuffledAnswers = _.shuffle(answers)
+            },
+            submitAnswer() {
+                let isCorrect = false;
+
+                if(this.selectedIndex === this.correctIndex) {
+                    isCorrect = true
+                }
+
+                this.increment(isCorrect);
             }
+        },
+        mounted() {
+            this.shuffleAnswers();
         }
     }
 </script>
@@ -54,7 +87,20 @@
         margin-bottom: 15px;
         cursor: pointer;
     }
+    .list-group-item:hover {
+       background: #EEE;
+    }
     .btn {
         margin: 0 5px;
+    }
+
+    .selected{
+        background-color: lightblue;
+    }
+    .correct{
+        background-color: lightgreen;
+    }
+    .incorrect{
+        background-color: red;
     }
 </style>
